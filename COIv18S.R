@@ -297,19 +297,25 @@ glimpse(COI.nosingleton)
 
 COI.rra <- COI.nosingleton %>%
   select(-Phylum) %>%
-  pivot_longer(-OTUID, names_to = "ARMS", values_to = "value") %>%
+  
   mutate(total.otus = sum(value)) %>%
   mutate(rra = value/total.otus) %>%
   select(OTUID, ARMS, rra) %>%
   pivot_wider(id_cols = OTUID, names_from = ARMS, values_from = rra, values_fill = list(rra = 0))
 
-glimpse(COI.rra)
-head(COI.rra)
+rownames(COI.rra) <- COI.rra$OTUID
+COI.rra <- COI.rra[-1]
+COI.rra = as.data.frame(t(COI.rra))
+COI.rra[c(1:10), c(1:10)]
+
+sum <- rowSums(COI.rra)
 
 
 ##### MDS #####
 
 detach("package:dplyr", unload=TRUE)
+library(plyr)
+library(dplyr)
 
 # run nmds ordination
 COI.nmds <- metaMDS(COI.rra[-1], k = 3, metric = "bray", trymax = 1000)
@@ -318,95 +324,82 @@ COI.nmds
 
 # plot ordination with ggplot
 COI.scores <- as.data.frame(scores(COI.nmds))
-COI.scores$species <- rownames(COI.scores)
-COI.scores1 <- as.data.frame(COI.scores %>% separate(col = species, into = c("species.only","individual"), sep = '[.]', remove = FALSE))
+COI.scores$fraction <- rownames(COI.scores)
+COI.scores1 <- as.data.frame(COI.scores %>% 
+                               mutate(ARMS = substr(fraction, 1, 9)))
 COI.scores1
 COI.scores1[is.na(COI.scores1)] <- 0
-colnames(COI.scores1) <- c("NMDS1", "NMDS2", "NMDS3", "ID", "species", "number")
 
 # convex hulls
-convex_hull <- function(COI.scores1) COI.scores1[chull(COI.scores1$NMDS1, COI.scores1$NMDS2),]
-convex_hull(COI.scores1)
+COI.convex.hull <- function(COI.scores1) COI.scores1[chull(COI.scores1$NMDS1, COI.scores1$NMDS2),]
+COI.convex.hull(COI.scores1)
 
 # ddply to get hulls based on species
-species_hulls <- ddply(COI.scores1, "species", convex_hull)
-str(species_hulls)
-head(species_hulls)
-species_hulls
+COI.species.hulls <- ddply(COI.scores1, "ARMS", COI.convex.hull)
+COI.species.hulls
 
-# reorder COI.scores1 to be in same order as species_hulls
-COI.scores2 <- as.data.frame(COI.scores1[order(COI.scores1$species),])
-spp <- as.data.frame(unique(COI.scores2$species))
-
-# only one species name at center of polygon
-ARMS.centers <- as.data.frame(group_by(species_hulls, species) %>% summarize(NMDS1 = mean(NMDS1), NMDS2 = mean(NMDS2), NMDS3 = mean(NMDS3)))
-ARMS.centers
-ARMS.centers <- as.data.frame(merge(ARMS.centers, spp, by = "species"))
+COI.scores2 <- as.data.frame(COI.scores1[order(COI.scores1$ARMS),])
+COI.spp <- as.data.frame(unique(COI.scores2$ARMS)) %>%
+  rename(ARMS = "unique(COI.scores2$ARMS)")
 
 # mds plot with color by species
-BaliCOI.mdsplot <- ggplot(Bali.scores2, aes(x = NMDS1, y = NMDS2)) +
-  geom_polygon(data = species_hulls, aes(x = NMDS1, y = NMDS2,
-                                         fill = species, group = species), alpha = 0.4, lty = 1, lwd = 0.3, color = "black") +
-  geom_point(size = 2, aes(color = species, group = species, alpha = 0.6)) +
-  geom_text(data = ARMS.centers, aes(x = NMDS1, y = NMDS2, label = species), size = 3) +
+COI.mdsplot <- ggplot(COI.scores2, aes(x = NMDS1, y = NMDS2)) +
+  geom_polygon(data = COI.species.hulls, aes(x = NMDS1, y = NMDS2,
+                                             fill = ARMS, group = ARMS), alpha = 0.4, lty = 1, lwd = 0.3, color = "black") +
+  geom_point(size = 2, aes(color = ARMS, group = ARMS, alpha = 0.6)) +
+  geom_text(data = COI.scores2, aes(x = NMDS1, y = NMDS2, label = fraction), size = 3) +
   theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                      axis.title = element_text(size=14),
                      axis.text.x = element_text(size = 14),
                      axis.text.y = element_text(size = 14),
                      legend.position="none") +
-  scale_color_manual(values = c(rep("coral1",3), rep("gold",3), rep("deepskyblue2",3))) + scale_fill_manual(values=c(rep("coral1",3), rep("gold",3), rep("deepskyblue2",3)))
-BaliCOI.mdsplot
+  scale_color_manual(values = c(rep("coral1",3), rep("gold",3), rep("deepskyblue2",3))) + 
+  scale_fill_manual(values=c(rep("coral1",3), rep("gold",3), rep("deepskyblue2",3)))
+COI.mdsplot
 
-ggsave("BaliCOI_NMDS.pdf", BaliCOI.mdsplot, width = 10, height = 10, useDingbats = FALSE)
+ggsave("plots/COI_MDS.pdf", COI.mdsplot, width = 10, height = 10, useDingbats = FALSE)
 
 
 ##### PHYLA SUMMARY #####
 
 # summarize by phyla
 
-COI.Phyla <- read.csv("/users/jordancasey/Desktop/BaliCOI_merg_taxonomy2.csv")
-
-COI.Phyla2 = COI.Phyla[-c(1)]
-
 COI.phyla.sum <- COI.Phyla2 %>% group_by(Phylum) %>% summarize_all(sum)
 
 COI.phyla.sum
 
-write.csv(COI.phyla.sum,file="/users/jordancasey/Desktop/BaliCOI_phyla_sum.csv")
-
-
 # decide where to cut off data to summarize & manually sum across these phyla as "other"
 
-COI.Phyla.summary <- read.csv("/users/jcasey/Desktop/BaliCOI_phyla_sum3.csv")
+COI.gather.phyla <- gather(COI.Phyla.summary, "ARMS", "Percent", -Phylum)
 
-Cgather.phyla <- gather(COI.Phyla.summary, "ARMS", "Percent", -Phylum)
+COI.gather.phyla
 
-Cgather.phyla
+colnames(COI.gather.phyla) <- c("Phylum", "ARMS", "Percent")
+COI.gather.phyla$Site <- c(rep("INDOCOI12S1", 33), rep("INDOCOI12S2", 33), rep("INDOCOI13S1", 33))
 
-colnames(Cgather.phyla) <- c("Phylum", "ARMS", "Percent")
-Cgather.phyla$Site <- c(rep("INDOCOI12S1", 33), rep("INDOCOI12S2", 33), rep("INDOCOI13S1", 33))
-
-Cphyla_sum <- Cgather.phyla %>% group_by(Phylum, Site) %>%
+COI.phyla_sum <- COI.gather.phyla %>% group_by(Phylum, Site) %>%
   summarise(mean.percent = mean(Percent),
             range.low = min(Percent),
             range.up = max(Percent))
 
-Cphylum.order <- Cgather.phyla %>% group_by(Phylum) %>% summarise(mean.phylum = mean(Percent))
-Cphylum.order
+COI.phylum.order <- COI.gather.phyla %>% group_by(Phylum) %>% summarise(mean.phylum = mean(Percent))
+COI.phylum.order
 
-Cphyla_joined <- inner_join(Cphyla_sum, Cphylum.order)
-
+COI.phyla.joined <- inner_join(COI.phyla_sum, COI.phylum.order)
 
 # caterpillar plot of percent composition of top phylum
 
-Ccaterpillar <- ggplot(Cphyla_joined, aes(x = rev(Site), y = mean.percent, color = Site)) +
-  geom_pointrange(aes(ymin = range.low, ymax = range.up)) + facet_grid(reorder(Phylum, -mean.phylum)~.) +
-  coord_flip() + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  coord_flip() + scale_colour_manual(values = c(INDOCOI12S1="coral1", INDOCOI12S2="gold", INDOCOI13S1="deepskyblue"))
+COI.caterpillar <- ggplot(COI.phyla.joined, aes(x = rev(Site), y = mean.percent, color = Site)) +
+  geom_pointrange(aes(ymin = range.low, ymax = range.up)) + 
+  facet_grid(reorder(Phylum, -mean.phylum)~.) +
+  coord_flip() + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  coord_flip() + 
+  scale_colour_manual(values = c(INDOCOI12S1="coral1", INDOCOI12S2="gold", INDOCOI13S1="deepskyblue"))
+COI.caterpillar
 
-Ccaterpillar
-
-ggsave("BaliCOI_Catepillar_Sum.pdf", Ccaterpillar, width = 6, height = 10, useDingbats = FALSE)
+ggsave("plots/COI_Catepillar.pdf", COI.caterpillar, width = 6, height = 10, useDingbats = FALSE)
 
 
 
