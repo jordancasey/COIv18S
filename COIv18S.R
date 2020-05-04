@@ -75,11 +75,16 @@ COI.rare.ln.500 <-COI.rare.500[which(COI.rare.500$method!="observed"),]
 COI.rare.ln.500$method <- factor(COI.rare.ln.500$method, c("interpolated", "extrapolated"), c("interpolation", "extrapolation"))
 COI.500.points <- COI.rare.500 %>% filter(method == "observed") %>% add_column(shape.vector = rep(1:3,3))
 COI.500.rarefaction <- ggplot(COI.rare.500, aes(x=x, y=y, color=site)) +
-  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.500) + geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
+  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.500) + 
+  geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
   geom_point(data = COI.500.points, aes(x = x, y = y, color = site, shape = as.factor(shape.vector)), size = 2) + 
   labs(x="Sequences", y="Number of OTUs") +
-  scale_colour_manual(values = c(INDO12S1AF500="coral1", INDO12S1BF500="coral1", INDO12S1CF500="coral1", INDO12S2AF500="gold", INDO12S2BF500="gold", INDO12S2CF500="gold", INDO13S1AF500="deepskyblue", INDO13S1BF500="deepskyblue", INDO13S1CF500="deepskyblue")) +
-  scale_fill_manual(values = c(INDO12S1AF500="coral1", INDO12S1BF500="coral1", INDO12S1CF500="coral1", INDO12S2AF500="gold", INDO12S2BF500="gold", INDO12S2CF500="gold", INDO13S1AF500="deepskyblue", INDO13S1BF500="deepskyblue", INDO13S1CF500="deepskyblue")) +
+  scale_colour_manual(values = c(INDO12S1AF500="coral1", INDO12S1BF500="coral1", INDO12S1CF500="coral1", 
+                                 INDO12S2AF500="gold", INDO12S2BF500="gold", INDO12S2CF500="gold", 
+                                 INDO13S1AF500="deepskyblue", INDO13S1BF500="deepskyblue", INDO13S1CF500="deepskyblue")) +
+  scale_fill_manual(values = c(INDO12S1AF500="coral1", INDO12S1BF500="coral1", INDO12S1CF500="coral1", 
+                               INDO12S2AF500="gold", INDO12S2BF500="gold", INDO12S2CF500="gold", 
+                               INDO13S1AF500="deepskyblue", INDO13S1BF500="deepskyblue", INDO13S1CF500="deepskyblue")) +
   scale_shape_manual(values = 15:17, name = "ARMS", labels = c("ARMSA", "ARMSB", "ARMSC")) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.500.rarefaction
@@ -134,11 +139,16 @@ COI.rare.ln.100 <-COI.rare.100[which(COI.rare.100$method!="observed"),]
 COI.rare.ln.100$method <- factor(COI.rare.ln.100$method, c("interpolated", "extrapolated"), c("interpolation", "extrapolation"))
 COI.100.points <- COI.rare.100 %>% filter(method == "observed") %>% add_column(shape.vector = rep(1:3,3))
 COI.100.rarefaction <- ggplot(COI.rare.100, aes(x=x, y=y, color=site)) +
-  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.100) + geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
+  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.100) + 
+  geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
   geom_point(data = COI.100.points, aes(x = x, y = y, color = site, shape = as.factor(shape.vector)), size = 2) + 
   labs(x="Sequences", y="Number of OTUs") +
-  scale_colour_manual(values = c(INDO12S1AF100="coral1", INDO12S1BF100="coral1", INDO12S1CF100="coral1", INDO12S2AF100="gold", INDO12S2BF100="gold", INDO12S2CF100="gold", INDO13S1AF100="deepskyblue", INDO13S1BF100="deepskyblue", INDO13S1CF100="deepskyblue")) +
-  scale_fill_manual(values = c(INDO12S1AF100="coral1", INDO12S1BF100="coral1", INDO12S1CF100="coral1", INDO12S2AF100="gold", INDO12S2BF100="gold", INDO12S2CF100="gold", INDO13S1AF100="deepskyblue", INDO13S1BF100="deepskyblue", INDO13S1CF100="deepskyblue")) +
+  scale_colour_manual(values = c(INDO12S1AF100="coral1", INDO12S1BF100="coral1", INDO12S1CF100="coral1", 
+                                 INDO12S2AF100="gold", INDO12S2BF100="gold", INDO12S2CF100="gold", 
+                                 INDO13S1AF100="deepskyblue", INDO13S1BF100="deepskyblue", INDO13S1CF100="deepskyblue")) +
+  scale_fill_manual(values = c(INDO12S1AF100="coral1", INDO12S1BF100="coral1", INDO12S1CF100="coral1", 
+                               INDO12S2AF100="gold", INDO12S2BF100="gold", INDO12S2CF100="gold", 
+                               INDO13S1AF100="deepskyblue", INDO13S1BF100="deepskyblue", INDO13S1CF100="deepskyblue")) +
   scale_shape_manual(values = 15:17, name = "ARMS", labels = c("ARMSA", "ARMSB", "ARMSC")) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.100.rarefaction
@@ -193,11 +203,16 @@ COI.rare.ln.SES <-COI.rare.SES[which(COI.rare.SES$method!="observed"),]
 COI.rare.ln.SES$method <- factor(COI.rare.ln.SES$method, c("interpolated", "extrapolated"), c("interpolation", "extrapolation"))
 COI.SES.points <- COI.rare.SES %>% filter(method == "observed") %>% add_column(shape.vector = rep(1:3,3))
 COI.SES.rarefaction <- ggplot(COI.rare.SES, aes(x=x, y=y, color=site)) +
-  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.SES) + geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
+  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.SES) + 
+  geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
   geom_point(data = COI.SES.points, aes(x = x, y = y, color = site, shape = as.factor(shape.vector)), size = 2) + 
   labs(x="Sequences", y="Number of OTUs") +
-  scale_colour_manual(values = c(INDO12S1ASES="coral1", INDO12S1BSES="coral1", INDO12S1CSES="coral1", INDO12S2ASES="gold", INDO12S2BSES="gold", INDO12S2CSES="gold", INDO13S1ASES="deepskyblue", INDO13S1BSES="deepskyblue", INDO13S1CSES="deepskyblue")) +
-  scale_fill_manual(values = c(INDO12S1ASES="coral1", INDO12S1BSES="coral1", INDO12S1CSES="coral1", INDO12S2ASES="gold", INDO12S2BSES="gold", INDO12S2CSES="gold", INDO13S1ASES="deepskyblue", INDO13S1BSES="deepskyblue", INDO13S1CSES="deepskyblue")) +
+  scale_colour_manual(values = c(INDO12S1ASES="coral1", INDO12S1BSES="coral1", INDO12S1CSES="coral1", 
+                                 INDO12S2ASES="gold", INDO12S2BSES="gold", INDO12S2CSES="gold", 
+                                 INDO13S1ASES="deepskyblue", INDO13S1BSES="deepskyblue", INDO13S1CSES="deepskyblue")) +
+  scale_fill_manual(values = c(INDO12S1ASES="coral1", INDO12S1BSES="coral1", INDO12S1CSES="coral1", 
+                               INDO12S2ASES="gold", INDO12S2BSES="gold", INDO12S2CSES="gold", 
+                               INDO13S1ASES="deepskyblue", INDO13S1BSES="deepskyblue", INDO13S1CSES="deepskyblue")) +
   scale_shape_manual(values = 15:17, name = "ARMS", labels = c("ARMSA", "ARMSB", "ARMSC")) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.SES.rarefaction
@@ -259,11 +274,16 @@ COI.rare.ln.ARMS <-COI.rare.ARMS[which(COI.rare.ARMS$method!="observed"),]
 COI.rare.ln.ARMS$method <- factor(COI.rare.ln.ARMS$method, c("interpolated", "extrapolated"), c("interpolation", "extrapolation"))
 COI.ARMS.points <- COI.rare.ARMS %>% filter(method == "observed") %>% add_column(shape.vector = rep(1:3,3))
 COI.ARMS.rarefaction <- ggplot(COI.rare.ARMS, aes(x=x, y=y, color=site)) +
-  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.ARMS) + geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
+  geom_line(aes(linetype=method), lwd=0.5, data=COI.rare.ln.ARMS) + 
+  geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=site, color=NULL), alpha=0.2) + 
   geom_point(data = COI.ARMS.points, aes(x = x, y = y, color = site, shape = as.factor(shape.vector)), size = 2) + 
   labs(x="Sequences", y="Number of OTUs") +
-  scale_colour_manual(values = c(INDO2012S1A="coral1", INDO2012S1B="coral1", INDO2012S1C="coral1", INDO2012S2A="gold", INDO2012S2B="gold", INDO2012S2C="gold", INDO2013S1A="deepskyblue", INDO2013S1B="deepskyblue", INDO2013S1C="deepskyblue")) +
-  scale_fill_manual(values = c(INDO2012S1A="coral1", INDO2012S1B="coral1", INDO2012S1C="coral1", INDO2012S2A="gold", INDO2012S2B="gold", INDO2012S2C="gold", INDO2013S1A="deepskyblue", INDO2013S1B="deepskyblue", INDO2013S1C="deepskyblue")) +
+  scale_colour_manual(values = c(INDO2012S1A="coral1", INDO2012S1B="coral1", INDO2012S1C="coral1", 
+                                 INDO2012S2A="gold", INDO2012S2B="gold", INDO2012S2C="gold", 
+                                 INDO2013S1A="deepskyblue", INDO2013S1B="deepskyblue", INDO2013S1C="deepskyblue")) +
+  scale_fill_manual(values = c(INDO2012S1A="coral1", INDO2012S1B="coral1", INDO2012S1C="coral1", 
+                               INDO2012S2A="gold", INDO2012S2B="gold", INDO2012S2C="gold", 
+                               INDO2013S1A="deepskyblue", INDO2013S1B="deepskyblue", INDO2013S1C="deepskyblue")) +
   scale_shape_manual(values = 15:17, name = "ARMS", labels = c("ARMSA", "ARMSB", "ARMSC")) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.ARMS.rarefaction
