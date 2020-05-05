@@ -293,29 +293,19 @@ ggsave("plots/COI_Rare_ARMS.pdf", COI.ARMS.rarefaction, width = 8, height = 6, u
 
 ##### RELATIVE ABUNDANCES ##### 
 
-glimpse(COI.nosingleton)
+head(COI.nosingleton)
 
 COI.rra <- COI.nosingleton %>%
   select(-Phylum) %>%
-  
-  mutate(total.otus = sum(value)) %>%
-  mutate(rra = value/total.otus) %>%
-  select(OTUID, ARMS, rra) %>%
-  pivot_wider(id_cols = OTUID, names_from = ARMS, values_from = rra, values_fill = list(rra = 0))
+  pivot_longer(names_to = "ARMS", values_to = "seq", -OTUID) %>%
+  group_by(ARMS) %>%
+  mutate(rra = seq/sum(seq)) %>%
+  pivot_wider(id_cols = ARMS, names_from = OTUID, values_from = rra, values_fill = list(rra = 0))
 
-rownames(COI.rra) <- COI.rra$OTUID
-COI.rra <- COI.rra[-1]
-COI.rra = as.data.frame(t(COI.rra))
-COI.rra[c(1:10), c(1:10)]
-
-sum <- rowSums(COI.rra)
+head(COI.rra)
 
 
 ##### MDS #####
-
-detach("package:dplyr", unload=TRUE)
-library(plyr)
-library(dplyr)
 
 # run nmds ordination
 COI.nmds <- metaMDS(COI.rra[-1], k = 3, metric = "bray", trymax = 1000)
@@ -324,18 +314,17 @@ COI.nmds
 
 # plot ordination with ggplot
 COI.scores <- as.data.frame(scores(COI.nmds))
-COI.scores$fraction <- rownames(COI.scores)
+COI.scores$fraction <- COI.rra$ARMS
 COI.scores1 <- as.data.frame(COI.scores %>% 
                                mutate(ARMS = substr(fraction, 1, 9)))
 COI.scores1
-COI.scores1[is.na(COI.scores1)] <- 0
 
 # convex hulls
 COI.convex.hull <- function(COI.scores1) COI.scores1[chull(COI.scores1$NMDS1, COI.scores1$NMDS2),]
 COI.convex.hull(COI.scores1)
 
 # ddply to get hulls based on species
-COI.species.hulls <- ddply(COI.scores1, "ARMS", COI.convex.hull)
+COI.species.hulls <- plyr::ddply(COI.scores1, "ARMS", COI.convex.hull)
 COI.species.hulls
 
 COI.scores2 <- as.data.frame(COI.scores1[order(COI.scores1$ARMS),])
@@ -364,42 +353,133 @@ ggsave("plots/COI_MDS.pdf", COI.mdsplot, width = 10, height = 10, useDingbats = 
 
 # summarize by phyla
 
-COI.phyla.sum <- COI.Phyla2 %>% group_by(Phylum) %>% summarize_all(sum)
+COI.rra.phyla <- COI.nosingleton %>%
+  select(-OTUID) %>%
+  pivot_longer(names_to = "ARMS", values_to = "seq", -Phylum) %>%
+  group_by(ARMS, Phylum) %>%
+  summarize(seq.phylum = sum(seq)) %>%
+  ungroup() %>%
+  group_by(ARMS) %>%
+  mutate(rra = seq.phylum/sum(seq.phylum)) %>%
+  pivot_wider(id_cols = Phylum, names_from = ARMS, values_from = rra, values_fill = list(rra = 0))
+head(COI.rra.phyla)
 
-COI.phyla.sum
+COI.rra.phyla %>% 
+  tbl_df %>% 
+  print(n=39)
 
-# decide where to cut off data to summarize & manually sum across these phyla as "other"
+# calculate means for each phlya
 
-COI.gather.phyla <- gather(COI.Phyla.summary, "ARMS", "Percent", -Phylum)
+COI.rra.mean <- COI.rra.phyla %>% 
+  mutate(mean_all = rowMeans(.[2:28]))
 
-COI.gather.phyla
+# fetch average unknown taxonomic assignments across samples - 41.1%
 
-colnames(COI.gather.phyla) <- c("Phylum", "ARMS", "Percent")
-COI.gather.phyla$Site <- c(rep("INDOCOI12S1", 33), rep("INDOCOI12S2", 33), rep("INDOCOI13S1", 33))
+COI.rra.mean[38,"mean_all"]
 
-COI.phyla_sum <- COI.gather.phyla %>% group_by(Phylum, Site) %>%
-  summarise(mean.percent = mean(Percent),
-            range.low = min(Percent),
-            range.up = max(Percent))
+# sum fractions from each ARMS
 
-COI.phylum.order <- COI.gather.phyla %>% group_by(Phylum) %>% summarise(mean.phylum = mean(Percent))
-COI.phylum.order
+phylum.helper <- COI.nosingleton %>%
+  select(OTUID, Phylum)
 
-COI.phyla.joined <- inner_join(COI.phyla_sum, COI.phylum.order)
+COI.group <- COI.nosingleton %>%
+  select(-Phylum) %>%
+  pivot_longer(names_to = "COI", values_to = "value", -OTUID) %>%
+  mutate(ARMS = substr(COI, 1, 9)) %>%
+  group_by(ARMS, OTUID) %>%
+  summarize(sum = sum (value)) %>%
+  pivot_wider(id_cols = OTUID , names_from = ARMS, values_from = sum, values_fill = list(sum = 0)) %>%
+  left_join(phylum.helper)
+
+head(COI.group)
+
+# remove unknowns & summarize by phyla
+
+COI.phyla.known <- COI.group %>%
+  select(-OTUID) %>%
+  pivot_longer(names_to = "ARMS", values_to = "seq", -Phylum) %>%
+  filter(Phylum != "Unknown") %>%
+  group_by(ARMS, Phylum) %>%
+  summarize(seq.phylum = sum(seq)) %>%
+  ungroup() %>%
+  group_by(ARMS) %>%
+  mutate(rra = seq.phylum/sum(seq.phylum)) %>%
+  pivot_wider(id_cols = Phylum, names_from = ARMS, values_from = rra, values_fill = list(rra = 0))
+head(COI.phyla.known)
+
+COI.phyla.known %>% 
+  tbl_df %>% 
+  print(n=38)
+
+# rank phlya by row means
+
+COI.rank <- COI.phyla.known %>% 
+  mutate(mean_all = rowMeans(.[2:10])) %>%
+  arrange(-mean_all)
+
+head(COI.rank)
+
+# get rid of top 10 phyla, combine all other phyla into "Other" category
+
+COI.other <- COI.rank %>%
+  filter(mean_all<0.01) %>%
+  summarize_if(is.numeric, sum) %>%
+  mutate(Phylum="Other") %>%
+  select(Phylum,everything())
+
+# add top 10 phyla back to "Other" category
+
+COI.phyla.final <- bind_rows(COI.rank,COI.other) %>%
+filter(mean_all>0.01)
+
+# unite Site and Year from metadata
+
+COI.meta <- bali_meta %>%
+  unite(Treatment, c("Site","Year"), remove = FALSE) %>%
+  select(ARMS, Treatment)
+
+COI.join <- COI.phyla.final %>%
+  select(-mean_all) %>%
+  pivot_longer(names_to = "ARMS", values_to = "value", -Phylum) %>% 
+  pivot_wider(id_cols = ARMS, names_from = Phylum, values_from = value, values_fill = list(value = 0)) %>%
+  left_join(COI.meta) %>%
+  distinct()
+
+COI.phyla.sum <- COI.join %>%
+  pivot_longer(names_to = "Phylum", values_to = "value", -c(ARMS, Treatment)) %>%
+  mutate(percent = value*100) %>%
+  group_by(Treatment, Phylum) %>%
+  summarize(mean = mean(percent), sd = sd(percent), n = n(), se = sd/sqrt(n)) %>%
+  arrange(-mean) %>%
+  mutate(ordervar = case_when(Treatment == "S1_2012" ~ 1,
+                              Treatment == "S2_2012" ~ 2,
+                              TRUE ~ 3))
+
+COI.phyla.sum 
 
 # caterpillar plot of percent composition of top phylum
 
-COI.caterpillar <- ggplot(COI.phyla.joined, aes(x = rev(Site), y = mean.percent, color = Site)) +
-  geom_pointrange(aes(ymin = range.low, ymax = range.up)) + 
-  facet_grid(reorder(Phylum, -mean.phylum)~.) +
-  coord_flip() + 
+COI.mean.rank <- COI.phyla.final %>%
+  select(Phylum)
+
+COI.caterpillar <- ggplot(COI.phyla.sum, aes(y = reorder(Treatment, -ordervar), x = mean, color = reorder(Treatment, -ordervar))) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = mean-se, xmax = mean+se), height = 0) +
+  # geom_pointrange(aes(ymin = min, ymax = max)) + 
+  facet_grid(reorder(Phylum, -mean)~., switch = "both") +
   theme_bw() + 
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  coord_flip() + 
-  scale_colour_manual(values = c(INDOCOI12S1="coral1", INDOCOI12S2="gold", INDOCOI13S1="deepskyblue"))
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_blank(), strip.text.y = element_text(color = "black", angle = 180),
+        axis.ticks.y = element_blank(), axis.text.y = element_blank(),
+        legend.position = "top", legend.title = element_blank()) +
+  scale_colour_manual(values = c("deepskyblue", "gold", "coral1"), 
+                      labels = c("2013_Site1", "2012_Site2", "2012_Site1"),
+                      guide = guide_legend(reverse = TRUE)) +
+  ylab("Phylum") +
+  xlab("Relative abundance (mean ± SE)") 
 COI.caterpillar
 
-ggsave("plots/COI_Catepillar.pdf", COI.caterpillar, width = 6, height = 10, useDingbats = FALSE)
+ggsave("plots/COI_Catepillar.pdf", COI.caterpillar, width = 6, height = 8, useDingbats = FALSE)
 
 
 
