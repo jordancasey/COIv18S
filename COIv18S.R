@@ -6,6 +6,8 @@ library(randomcoloR)
 library(colorRamps)
 library(stringr)
 library(sp)
+library(cowplot)
+library(patchwork)
 
 
 bali_COI<- read.csv("data/COI_OTU_Taxonomy.csv")
@@ -89,7 +91,7 @@ COI.500.rarefaction <- ggplot(COI.rare.500, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.500.rarefaction
 
-ggsave("plots/COI_Rare_500.pdf", COI.500.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/COI_Rare_500.pdf", COI.500.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ### RAREFACTION BY 100 FRACTION
@@ -153,7 +155,7 @@ COI.100.rarefaction <- ggplot(COI.rare.100, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.100.rarefaction
 
-ggsave("plots/COI_Rare_100.pdf", COI.100.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/COI_Rare_100.pdf", COI.100.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ### RAREFACTION BY SESSILE FRACTION
@@ -217,7 +219,7 @@ COI.SES.rarefaction <- ggplot(COI.rare.SES, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.SES.rarefaction
 
-ggsave("plots/COI_Rare_SES.pdf", COI.SES.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/COI_Rare_SES.pdf", COI.SES.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ### RAREFACTION BY ARMS
@@ -288,7 +290,7 @@ COI.ARMS.rarefaction <- ggplot(COI.rare.ARMS, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 COI.ARMS.rarefaction
 
-ggsave("plots/COI_Rare_ARMS.pdf", COI.ARMS.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/COI_Rare_ARMS.pdf", COI.ARMS.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ##### RELATIVE ABUNDANCES ##### 
@@ -346,7 +348,7 @@ COI.mdsplot <- ggplot(COI.scores2, aes(x = NMDS1, y = NMDS2)) +
   scale_fill_manual(values=c(rep("coral1",3), rep("gold",3), rep("deepskyblue2",3)))
 COI.mdsplot
 
-ggsave("plots/COI_MDS.pdf", COI.mdsplot, width = 10, height = 10, useDingbats = FALSE)
+# ggsave("plots/COI_MDS.pdf", COI.mdsplot, width = 10, height = 10, useDingbats = FALSE)
 
 
 ##### PHYLA SUMMARY #####
@@ -462,7 +464,8 @@ COI.phyla.sum
 COI.mean.rank <- COI.phyla.final %>%
   select(Phylum)
 
-COI.caterpillar <- ggplot(COI.phyla.sum, aes(y = reorder(Treatment, -ordervar), x = mean, color = reorder(Treatment, -ordervar))) +
+COI.caterpillar <- ggplot(COI.phyla.sum, aes(y = reorder(Treatment, -ordervar), 
+                                             x = mean, color = reorder(Treatment, -ordervar))) +
   geom_point() +
   geom_errorbarh(aes(xmin = mean-se, xmax = mean+se), height = 0) +
   # geom_pointrange(aes(ymin = min, ymax = max)) + 
@@ -476,10 +479,12 @@ COI.caterpillar <- ggplot(COI.phyla.sum, aes(y = reorder(Treatment, -ordervar), 
                       labels = c("2013_Site1", "2012_Site2", "2012_Site1"),
                       guide = guide_legend(reverse = TRUE)) +
   ylab("Phylum") +
-  xlab("Relative abundance (mean ± SE)") 
+  xlab("Relative abundance (mean ± SE)") + 
+  ggtitle("(a) COI") +
+  theme(plot.title = element_text(size = 14))
 COI.caterpillar
 
-ggsave("plots/COI_Catepillar.pdf", COI.caterpillar, width = 6, height = 8, useDingbats = FALSE)
+# ggsave("plots/COI_Catepillar.pdf", COI.caterpillar, width = 6, height = 8, useDingbats = FALSE)
 
 
 
@@ -558,7 +563,7 @@ x18S.500.rarefaction <- ggplot(x18S.rare.500, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 x18S.500.rarefaction
 
-ggsave("plots/18S_Rare_500.pdf", x18S.500.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/18S_Rare_500.pdf", x18S.500.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ### RAREFACTION BY 100 FRACTION
@@ -622,7 +627,7 @@ x18S.100.rarefaction <- ggplot(x18S.rare.100, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 x18S.100.rarefaction
 
-ggsave("plots/18S_Rare_100.pdf", x18S.100.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/18S_Rare_100.pdf", x18S.100.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ### RAREFACTION BY SESSILE FRACTION
@@ -686,7 +691,7 @@ x18S.SES.rarefaction <- ggplot(x18S.rare.SES, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 x18S.SES.rarefaction
 
-ggsave("plots/18S_Rare_SES.pdf", x18S.SES.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/18S_Rare_SES.pdf", x18S.SES.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ### RAREFACTION BY ARMS
@@ -757,7 +762,7 @@ x18S.ARMS.rarefaction <- ggplot(x18S.rare.ARMS, aes(x=x, y=y, color=site)) +
   theme (legend.position = "right", legend.title = element_blank(), text=element_text(size=18)) + theme_classic()
 x18S.ARMS.rarefaction
 
-ggsave("plots/18S_Rare_ARMS.pdf", x18S.ARMS.rarefaction, width = 8, height = 6, useDingbats = FALSE)
+# ggsave("plots/18S_Rare_ARMS.pdf", x18S.ARMS.rarefaction, width = 8, height = 6, useDingbats = FALSE)
 
 
 ##### RELATIVE ABUNDANCES ##### 
@@ -785,7 +790,7 @@ x18S.nmds
 x18S.scores <- as.data.frame(scores(x18S.nmds))
 x18S.scores$fraction <- x18S.rra$ARMS
 x18S.scores1 <- as.data.frame(x18S.scores %>% 
-                               mutate(ARMS = substr(fraction, 1, 9)))
+                               mutate(ARMS = substr(fraction, 1, 12)))
 x18S.scores1
 
 # convex hulls
@@ -815,7 +820,7 @@ x18S.mdsplot <- ggplot(x18S.scores2, aes(x = NMDS1, y = NMDS2)) +
   scale_fill_manual(values=c(rep("coral1",3), rep("gold",3), rep("deepskyblue2",3)))
 x18S.mdsplot
 
-ggsave("plots/18S_MDS.pdf", x18S.mdsplot, width = 10, height = 10, useDingbats = FALSE)
+# ggsave("plots/18S_MDS.pdf", x18S.mdsplot, width = 10, height = 10, useDingbats = FALSE)
 
 
 ##### PHYLA SUMMARY #####
@@ -835,16 +840,16 @@ head(x18S.rra.phyla)
 
 x18S.rra.phyla %>% 
   tbl_df %>% 
-  print(n=39)
+  print(52)
 
 # calculate means for each phlya
 
 x18S.rra.mean <- x18S.rra.phyla %>% 
   mutate(mean_all = rowMeans(.[2:28]))
 
-# fetch average unknown taxonomic assignments across samples - 41.1%
+# fetch average unknown taxonomic assignments across samples - 0.62%
 
-x18S.rra.mean[38,"mean_all"]
+x18S.rra.mean[50,"mean_all"]
 
 # sum fractions from each ARMS
 
@@ -854,7 +859,7 @@ x18S.phylum.helper <- x18S.nosingleton %>%
 x18S.group <- x18S.nosingleton %>%
   select(-Phylum) %>%
   pivot_longer(names_to = "x18S", values_to = "value", -OTUID) %>%
-  mutate(ARMS = substr(x18S, 1, 9)) %>%
+  mutate(ARMS = substr(x18S, 1, 12)) %>%
   group_by(ARMS, OTUID) %>%
   summarize(sum = sum (value)) %>%
   pivot_wider(id_cols = OTUID , names_from = ARMS, values_from = sum, values_fill = list(sum = 0)) %>%
@@ -891,7 +896,7 @@ head(x18S.rank)
 # get rid of top 10 phyla, combine all other phyla into "Other" category
 
 x18S.other <- x18S.rank %>%
-  filter(mean_all<0.01) %>%
+  filter(mean_all<0.01471) %>%
   summarize_if(is.numeric, sum) %>%
   mutate(Phylum="Other") %>%
   select(Phylum,everything())
@@ -899,23 +904,23 @@ x18S.other <- x18S.rank %>%
 # add top 10 phyla back to "Other" category
 
 x18S.phyla.final <- bind_rows(x18S.rank,x18S.other) %>%
-  filter(mean_all>0.01)
+  filter(mean_all>0.01471)
 
 # unite Site and Year from metadata
 
 x18S.meta <- bali_meta %>%
   unite(Treatment, c("Site","Year"), remove = FALSE) %>%
-  select(ARMS, Treatment)
+  select(ARMS.18S, Treatment)
 
 x18S.join <- x18S.phyla.final %>%
   select(-mean_all) %>%
-  pivot_longer(names_to = "ARMS", values_to = "value", -Phylum) %>% 
-  pivot_wider(id_cols = ARMS, names_from = Phylum, values_from = value, values_fill = list(value = 0)) %>%
+  pivot_longer(names_to = "ARMS.18S", values_to = "value", -Phylum) %>% 
+  pivot_wider(id_cols = ARMS.18S, names_from = Phylum, values_from = value, values_fill = list(value = 0)) %>%
   left_join(x18S.meta) %>%
   distinct()
 
 x18S.phyla.sum <- x18S.join %>%
-  pivot_longer(names_to = "Phylum", values_to = "value", -c(ARMS, Treatment)) %>%
+  pivot_longer(names_to = "Phylum", values_to = "value", -c(ARMS.18S, Treatment)) %>%
   mutate(percent = value*100) %>%
   group_by(Treatment, Phylum) %>%
   summarize(mean = mean(percent), sd = sd(percent), n = n(), se = sd/sqrt(n)) %>%
@@ -931,7 +936,8 @@ x18S.phyla.sum
 x18S.mean.rank <- x18S.phyla.final %>%
   select(Phylum)
 
-x18S.caterpillar <- ggplot(x18S.phyla.sum, aes(y = reorder(Treatment, -ordervar), x = mean, color = reorder(Treatment, -ordervar))) +
+x18S.caterpillar <- ggplot(x18S.phyla.sum, aes(y = reorder(Treatment, -ordervar), 
+                                               x = mean, color = reorder(Treatment, -ordervar))) +
   geom_point() +
   geom_errorbarh(aes(xmin = mean-se, xmax = mean+se), height = 0) +
   # geom_pointrange(aes(ymin = min, ymax = max)) + 
@@ -945,7 +951,41 @@ x18S.caterpillar <- ggplot(x18S.phyla.sum, aes(y = reorder(Treatment, -ordervar)
                       labels = c("2013_Site1", "2012_Site2", "2012_Site1"),
                       guide = guide_legend(reverse = TRUE)) +
   ylab("Phylum") +
-  xlab("Relative abundance (mean ± SE)") 
+  xlab("Relative abundance (mean ± SE)") +
+  ggtitle("(b) 18S") +
+  theme(plot.title = element_text(size = 14))
 x18S.caterpillar
 
-ggsave("plots/18S_Catepillar.pdf", x18S.caterpillar, width = 6, height = 8, useDingbats = FALSE)
+# ggsave("plots/18S_Catepillar.pdf", x18S.caterpillar, width = 6, height = 8, useDingbats = FALSE)
+
+
+
+#######################
+###### COI + 18S ######
+#######################
+
+plot_grid(COI.500.rarefaction, x18S.500.rarefaction, 
+          COI.100.rarefaction, x18S.100.rarefaction, 
+          COI.SES.rarefaction, x18S.SES.rarefaction, 
+          align="hv", nrow=3, ncol=2)
+ggsave("plots/COI18S_Rare_Fractions.pdf", plot_grid(COI.500.rarefaction, x18S.500.rarefaction, 
+                                              COI.100.rarefaction, x18S.100.rarefaction, 
+                                              COI.SES.rarefaction, x18S.SES.rarefaction,
+                                              align="hv", nrow=3, ncol=2), width = 16, height = 20, useDingbats = FALSE)
+
+plot_grid(COI.ARMS.rarefaction, x18S.ARMS.rarefaction, align="h")
+ggsave("plots/COI18S_Rare_ALL.pdf", plot_grid(COI.ARMS.rarefaction, x18S.ARMS.rarefaction, 
+                                        align="h"), width = 16, height = 6, useDingbats = FALSE)
+
+plot_grid(COI.mdsplot, x18S.mdsplot, align="h")
+ggsave("plots/COI18S_MDS.pdf", plot_grid(COI.mdsplot, x18S.mdsplot, 
+                                   align="h"), width = 15, height = 7, useDingbats = FALSE)
+
+plot_grid(COI.caterpillar, x18S.caterpillar, align="h")
+ggsave("plots/COI18S_Caterpillar.pdf", plot_grid(COI.caterpillar, x18S.caterpillar, 
+                                           align="h"), width = 12, height = 8, useDingbats = FALSE)
+
+patch <- COI.caterpillar + x18S.caterpillar
+patch
+
+
