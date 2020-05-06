@@ -8,6 +8,13 @@ library(stringr)
 library(sp)
 library(cowplot)
 library(patchwork)
+library(rstan)
+library(purrr)
+library(brms)
+library(tidybayes)
+library(ggridges)
+library(ggstance)
+library(tidybayes)
 
 
 bali_COI<- read.csv("data/COI_OTU_Taxonomy.csv")
@@ -988,4 +995,18 @@ ggsave("plots/COI18S_Caterpillar.pdf", plot_grid(COI.caterpillar, x18S.caterpill
 patch <- COI.caterpillar + x18S.caterpillar
 patch
 
+
+
+#############################
+###### COI v 18S Model ######
+#############################
+
+
+
+
+
+
+############################
+###### CoralNet Model ######
+############################
 
