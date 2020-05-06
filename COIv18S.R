@@ -36,6 +36,16 @@ COI.nosingleton <- bali_COI %>%
   filter(rowsum > 1) %>%
   select(-rowsum)
 
+# number of OTUs annotated with Phylum "Unknown" - 15,770
+
+length(which(COI.nosingleton$Phylum == "Unknown"))
+
+# total number of sequence reads per ARMS fraction and overarching sum
+
+COI.total <- COI.nosingleton %>%
+  select(-c(OTUID, Phylum)) %>%
+  summarize_all(funs(sum)) %>%
+  mutate(sum = rowSums(.))
 
 ##### RAREFACTION CURVES #####
 
@@ -249,7 +259,27 @@ COI.merged <- COI.long %>% group_by(Year, Site, Unit, OTUID) %>% summarize(summe
   ungroup() %>%
   select(-Year, -Site, -Unit) %>%
   pivot_wider(names_from = OTUID, values_from = summed.value)
+
+# total sequence reads for each ARMS
+
+COI.count <- COI.merged %>%
+  select(-ARMSID) %>%
+  mutate(sums = rowSums(.))
+COI.count$sums
   
+# total OTUs for each ARMS
+
+COI.otu <- COI.long %>% group_by(Year, Site, Unit, OTUID) %>% summarize(summed.value = sum(value)) %>%
+  mutate(ARMSID = paste("INDO",Year,Site,Unit, sep = "")) %>%
+  ungroup() %>%
+  select(-Year, -Site, -Unit) %>%
+  mutate(pa.otu = case_when(summed.value > 0 ~ 1,
+                            TRUE ~ 0)) %>%
+  group_by(ARMSID) %>%
+  summarize(otu.count = sum(pa.otu))
+
+# prepare data for rarefaction
+
 COI.list <- as.data.frame(COI.merged)
 rownames(COI.list) <- COI.list$ARMSID
 COI.listARMS <- COI.list[-1]
@@ -508,6 +538,16 @@ x18S.nosingleton <- bali_18S %>%
   filter(rowsum > 1) %>%
   select(-rowsum)
 
+# number of OTUs annotated with Phylum "Unknown" - 209
+
+length(which(x18S.nosingleton$Phylum == "Unknown"))
+
+# total number of sequence reads per ARMS fraction and overarching sum
+
+x18S.total <- x18S.nosingleton %>%
+  select(-c(OTUID, Phylum)) %>%
+  summarize_all(funs(sum)) %>%
+  mutate(sum = rowSums(.))
 
 ##### RAREFACTION CURVES #####
 
@@ -721,6 +761,26 @@ x18S.merged <- x18S.long %>% group_by(Year, Site, Unit, OTUID) %>% summarize(sum
   ungroup() %>%
   select(-Year, -Site, -Unit) %>%
   pivot_wider(names_from = OTUID, values_from = summed.value)
+
+# total sequence reads for each ARMS
+
+x18S.count <- x18S.merged %>%
+  select(-ARMSID) %>%
+  mutate(sums = rowSums(.))
+x18S.count$sums
+
+# total OTUs for each ARMS
+
+x18S.otu <- x18S.long %>% group_by(Year, Site, Unit, OTUID) %>% summarize(summed.value = sum(value)) %>%
+  mutate(ARMSID = paste("INDO18S",Year,Site,Unit, sep = "")) %>%
+  ungroup() %>%
+  select(-Year, -Site, -Unit) %>%
+  mutate(pa.otu = case_when(summed.value > 0 ~ 1,
+                   TRUE ~ 0)) %>%
+  group_by(ARMSID) %>%
+  summarize(otu.count = sum(pa.otu))
+
+# prepare data for rarefaction
 
 x18S.list <- as.data.frame(x18S.merged)
 rownames(x18S.list) <- x18S.list$ARMSID
