@@ -484,7 +484,7 @@ COI.caterpillar <- ggplot(COI.phyla.sum, aes(y = reorder(Treatment, -ordervar),
   theme(plot.title = element_text(size = 14))
 COI.caterpillar
 
-# ggsave("plots/COI_Catepillar.pdf", COI.caterpillar, width = 6, height = 8, useDingbats = FALSE)
+# ggsave("plots/COI_Caterpillar.pdf", COI.caterpillar, width = 6, height = 8, useDingbats = FALSE)
 
 
 
@@ -956,7 +956,7 @@ x18S.caterpillar <- ggplot(x18S.phyla.sum, aes(y = reorder(Treatment, -ordervar)
   theme(plot.title = element_text(size = 14))
 x18S.caterpillar
 
-# ggsave("plots/18S_Catepillar.pdf", x18S.caterpillar, width = 6, height = 8, useDingbats = FALSE)
+# ggsave("plots/18S_Caterpillar.pdf", x18S.caterpillar, width = 6, height = 8, useDingbats = FALSE)
 
 
 
