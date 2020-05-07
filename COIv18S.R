@@ -349,11 +349,13 @@ head(COI.rra)
 ##### MDS #####
 
 # run nmds ordination
+
 COI.nmds <- metaMDS(COI.rra[-1], k = 3, metric = "bray", trymax = 1000)
 stressplot(COI.nmds)
 COI.nmds
 
 # plot ordination with ggplot
+
 COI.scores <- as.data.frame(scores(COI.nmds))
 COI.scores$fraction <- COI.rra$ARMS
 COI.scores1 <- as.data.frame(COI.scores %>% 
@@ -361,10 +363,12 @@ COI.scores1 <- as.data.frame(COI.scores %>%
 COI.scores1
 
 # convex hulls
+
 COI.convex.hull <- function(COI.scores1) COI.scores1[chull(COI.scores1$NMDS1, COI.scores1$NMDS2),]
 COI.convex.hull(COI.scores1)
 
 # ddply to get hulls based on species
+
 COI.species.hulls <- plyr::ddply(COI.scores1, "ARMS", COI.convex.hull)
 COI.species.hulls
 
@@ -373,6 +377,7 @@ COI.spp <- as.data.frame(unique(COI.scores2$ARMS)) %>%
   rename(ARMS = "unique(COI.scores2$ARMS)")
 
 # mds plot with color by species
+
 COI.mdsplot <- ggplot(COI.scores2, aes(x = NMDS1, y = NMDS2)) +
   geom_polygon(data = COI.species.hulls, aes(x = NMDS1, y = NMDS2,
                                              fill = ARMS, group = ARMS), alpha = 0.4, lty = 1, lwd = 0.3, color = "black") +
@@ -498,16 +503,17 @@ COI.phyla.sum <- COI.join %>%
 
 COI.phyla.sum 
 
-# caterpillar plot of percent composition of top phylum
+# phyla to be plotted
 
 COI.mean.rank <- COI.phyla.final %>%
   select(Phylum)
+
+# caterpillar plot of percent composition of top phylum
 
 COI.caterpillar <- ggplot(COI.phyla.sum, aes(y = reorder(Treatment, -ordervar), 
                                              x = mean, color = reorder(Treatment, -ordervar))) +
   geom_point() +
   geom_errorbarh(aes(xmin = mean-se, xmax = mean+se), height = 0) +
-  # geom_pointrange(aes(ymin = min, ymax = max)) + 
   facet_grid(reorder(Phylum, -mean)~., switch = "both") +
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -851,11 +857,13 @@ head(x18S.rra)
 ##### MDS #####
 
 # run nmds ordination
+
 x18S.nmds <- metaMDS(x18S.rra[-1], k = 3, metric = "bray", trymax = 1000)
 stressplot(x18S.nmds)
 x18S.nmds
 
 # plot ordination with ggplot
+
 x18S.scores <- as.data.frame(scores(x18S.nmds))
 x18S.scores$fraction <- x18S.rra$ARMS
 x18S.scores1 <- as.data.frame(x18S.scores %>% 
@@ -863,10 +871,12 @@ x18S.scores1 <- as.data.frame(x18S.scores %>%
 x18S.scores1
 
 # convex hulls
+
 x18S.convex.hull <- function(x18S.scores1) x18S.scores1[chull(x18S.scores1$NMDS1, x18S.scores1$NMDS2),]
 x18S.convex.hull(x18S.scores1)
 
 # ddply to get hulls based on species
+
 x18S.species.hulls <- plyr::ddply(x18S.scores1, "ARMS", x18S.convex.hull)
 x18S.species.hulls
 
@@ -875,6 +885,7 @@ x18S.spp <- as.data.frame(unique(x18S.scores2$ARMS)) %>%
   rename(ARMS = "unique(x18S.scores2$ARMS)")
 
 # mds plot with color by species
+
 x18S.mdsplot <- ggplot(x18S.scores2, aes(x = NMDS1, y = NMDS2)) +
   geom_polygon(data = x18S.species.hulls, aes(x = NMDS1, y = NMDS2,
                                              fill = ARMS, group = ARMS), alpha = 0.4, lty = 1, lwd = 0.3, color = "black") +
@@ -1000,16 +1011,17 @@ x18S.phyla.sum <- x18S.join %>%
 
 x18S.phyla.sum 
 
-# caterpillar plot of percent composition of top phylum
+# phyla to be plotted
 
 x18S.mean.rank <- x18S.phyla.final %>%
   select(Phylum)
+
+# caterpillar plot of percent composition of top phylum
 
 x18S.caterpillar <- ggplot(x18S.phyla.sum, aes(y = reorder(Treatment, -ordervar), 
                                                x = mean, color = reorder(Treatment, -ordervar))) +
   geom_point() +
   geom_errorbarh(aes(xmin = mean-se, xmax = mean+se), height = 0) +
-  # geom_pointrange(aes(ymin = min, ymax = max)) + 
   facet_grid(reorder(Phylum, -mean)~., switch = "both") +
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -1029,30 +1041,42 @@ x18S.caterpillar
 
 
 
-###########*###########
-###### COI + 18S ######
-###########*###########
+##############*##############
+###### COI + 18S PLOTS ######
+##############*##############
+
+# rarefaction curves by fraction
 
 plot_grid(COI.500.rarefaction, x18S.500.rarefaction, 
           COI.100.rarefaction, x18S.100.rarefaction, 
           COI.SES.rarefaction, x18S.SES.rarefaction, 
           align="hv", nrow=3, ncol=2)
-ggsave("plots/COI18S_Rare_Fractions.pdf", plot_grid(COI.500.rarefaction, x18S.500.rarefaction, 
-                                              COI.100.rarefaction, x18S.100.rarefaction, 
-                                              COI.SES.rarefaction, x18S.SES.rarefaction,
-                                              align="hv", nrow=3, ncol=2), width = 16, height = 20, useDingbats = FALSE)
+
+# ggsave("plots/COI18S_Rare_Fractions.pdf", plot_grid(COI.500.rarefaction, x18S.500.rarefaction, 
+#                                              COI.100.rarefaction, x18S.100.rarefaction, 
+#                                              COI.SES.rarefaction, x18S.SES.rarefaction,
+#                                              align="hv", nrow=3, ncol=2), width = 16, height = 20, useDingbats = FALSE)
+
+# rarefaction curves by ARMS
 
 plot_grid(COI.ARMS.rarefaction, x18S.ARMS.rarefaction, align="h")
-ggsave("plots/COI18S_Rare_ALL.pdf", plot_grid(COI.ARMS.rarefaction, x18S.ARMS.rarefaction, 
-                                        align="h"), width = 16, height = 6, useDingbats = FALSE)
+
+# ggsave("plots/COI18S_Rare_ALL.pdf", plot_grid(COI.ARMS.rarefaction, x18S.ARMS.rarefaction, 
+#                                        align="h"), width = 16, height = 6, useDingbats = FALSE)
+
+# MDS plots
 
 plot_grid(COI.mdsplot, x18S.mdsplot, align="h")
-ggsave("plots/COI18S_MDS.pdf", plot_grid(COI.mdsplot, x18S.mdsplot, 
-                                   align="h"), width = 15, height = 7, useDingbats = FALSE)
+
+# ggsave("plots/COI18S_MDS.pdf", plot_grid(COI.mdsplot, x18S.mdsplot, 
+#                                   align="h"), width = 15, height = 7, useDingbats = FALSE)
+
+# caterpillar plots
 
 plot_grid(COI.caterpillar, x18S.caterpillar, align="h")
-ggsave("plots/COI18S_Caterpillar.pdf", plot_grid(COI.caterpillar, x18S.caterpillar, 
-                                           align="h"), width = 12, height = 8, useDingbats = FALSE)
+
+#ggsave("plots/COI18S_Caterpillar.pdf", plot_grid(COI.caterpillar, x18S.caterpillar, 
+#                                           align="h"), width = 12, height = 8, useDingbats = FALSE)
 
 patch <- COI.caterpillar + x18S.caterpillar
 patch
@@ -1060,15 +1084,298 @@ patch
 
 
 #############*###############
-###### COI v 18S Model ######
+###### COI v 18S MODEL ######
 #############*###############
 
+### data wrangling
+
+# create metadata for model
+
+meta.siteyear <- bali_meta %>%
+  unite(Treatment, c("Site","Year"), remove = FALSE) %>%
+  mutate(Treatment = paste(Year, Site, sep = "_")) %>%
+  select(ARMS, ARMS.18S, Treatment, Site, Year) %>%
+  unique()
+
+# COI data to long format
+
+COI.long <- COI.phyla.known %>%
+  filter_at(vars(-Phylum), all_vars(.>0)) %>%
+  pivot_longer(names_to = "ARMS", values_to = "rra", -Phylum) %>%
+  left_join(meta.siteyear) %>%
+  mutate(marker = "COI")
+
+# 18S data to long format
+
+x18S.long <- x18S.phyla.known %>%
+  filter_at(vars(-Phylum), all_vars(.>0)) %>%
+  pivot_longer(names_to = "ARMS.18S", values_to = "rra", -Phylum) %>%
+  left_join(meta.siteyear) %>%
+  mutate(marker = "x18S")
+
+# phyla that co-occur in COI and 18S datasets
+
+match.phyla <- unique(COI.long$Phylum)[unique(COI.long$Phylum) %in% unique(x18S.long$Phylum)]
+length(match.phyla)
+
+# combine COI and 18S datasets
+
+combined.bali <- full_join(COI.long, x18S.long) %>%
+  filter(Phylum %in% match.phyla)
+
+# plot summary of combined datasets
+
+combined.plot <- ggplot(combined.bali)+
+  geom_boxplot(aes(x = marker, y = log(rra), fill = Treatment)) +
+  facet_wrap(~Phylum, scales = "free") +
+  theme_bw()
 
 
+##### RUN MODEL #####
+
+# primer and phylum as fixed effects, random effects of year and site
+
+fit <- brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Year:marker) + (1|Phylum:Site:marker), 
+           data = combined.bali, family = "student",
+           control = list(adapt_delta = 0.9))
+summary(fit)
+
+plot(fit) # trace plots look good
+brms::pp_check(fit) # posterior prediction plot looks good
+
+# dataframe for predictions
+
+prr <- unique(select(combined.bali, Phylum, Year, Site, Treatment, marker))
+
+# arrange model to create prediction plot
+
+pred <- fitted(fit, prr, summary = FALSE)
+pred <- t(pred) 
+pred <- cbind(prr, pred)
+pred <- tidyr::gather(pred, key = "key", value = "value", -Phylum, -Year, -Site, -marker, -Treatment) 
+
+
+##### MODEL PLOTS #####
+
+### prediction plots of 20 co-occuring phyla
+
+COI.18S.plot <- ggplot(pred) + 
+  geom_density_ridges(aes(x = exp(value), fill = marker, y = Treatment), alpha = 0.7, 
+                       quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
+  scale_fill_manual(values = c( "blue4", "aquamarine"),
+                    labels = c("COI", "18S"), name = "Marker") +
+  theme_bw() +
+  labs(x = "Relative abundance", y = "") +
+  scale_y_discrete(limits = rev(levels(as.factor(pred$Treatment))), labels = c("2013_Site1", "2012_Site2", "2012_Site1")) +
+  facet_wrap(~Phylum, scales = "free", ncol = 4) +
+  theme(strip.background =element_rect(fill = "white"),
+        panel.grid = element_blank() )
+
+# ggsave("plots/COIvs18S_Model.png", COI.18S.plot, width = 12, height = 10)
+
+
+### random effect plots
+
+# concatenate phylum, site, and marker
+
+random.site <- fit %>% spread_draws(`r_Phylum:Site:marker`[level,])  %>% 
+  separate(level, into = c("Phylum", "site", "marker"), sep = "_", remove = FALSE)
+
+# COI - random effect of site plot
+
+COI.site.plot <- random.site[random.site$marker=="COI",] %>%
+  ggplot(aes(y = Phylum, x = `r_Phylum:Site:marker`, fill = site), alpha = 0.5) +
+  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
+  scale_fill_manual(values = c( "purple1", "gold")) +
+  theme_bw() +
+  xlim(c(-2, 2)) +
+  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
+  labs(title = "(a) COI - Site") +
+  labs(y = "", x = "random effect") +
+  theme(panel.grid = element_blank(),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        plot.title = element_text(hjust = 0))
+
+# 18S - random effect of site plot
+
+x18S.site.plot <- random.site[random.site$marker=="x18S",] %>%
+  ggplot(aes(y = Phylum, x = `r_Phylum:Site:marker`, fill = site), alpha = 0.5) +
+  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
+  scale_fill_manual(values = c( "purple1", "gold"), name = "Site") +
+  theme_bw() +
+  xlim(c(-2, 2)) +
+  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
+  labs(title = "(b) 18S - Site") +
+  labs(y = "", x = "random effect") +
+  theme(panel.grid = element_blank(),
+        axis.title.x = element_blank(),
+        plot.title = element_text(hjust = 0), 
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank())
+
+# concatenate phylum, year, and marker
+
+random.year <- fit %>% spread_draws(`r_Phylum:Year:marker`[level,])  %>% 
+  separate(level, into = c("Phylum", "year", "marker"), sep = "_", remove = FALSE)
+
+# COI - random effect of year plot
+
+COI.year.plot <- random.year[random.year$marker=="COI",] %>%
+  ggplot(aes(y = Phylum, x = `r_Phylum:Year:marker`, fill = year), alpha = 0.5) +
+  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
+  theme_bw() +
+  scale_fill_manual(values = c("darkorange2",  "deepskyblue")) +
+  labs(title = "(c) COI - Year") +
+  xlim(c(-2, 2)) +
+  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
+  labs(y = "", x = "random effect") +
+  theme(panel.grid = element_blank(),
+        legend.position = "none")
+
+# 18S - random effect of year plot
+
+x18S.year.plot <- random.year[random.year$marker=="x18S",] %>%
+  ggplot(aes(y = Phylum, x = `r_Phylum:Year:marker`, fill = year), alpha = 0.5) +
+  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
+  theme_bw() +
+  scale_fill_manual(values = c("darkorange2",  "deepskyblue"), name = "Year") +
+  labs(title = "(d) 18S - Year") +
+  xlim(c(-2, 2)) +
+  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
+  labs(y = "", x = "random effect")  +
+  theme(panel.grid = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank())
+
+# concatenate all four random effects plots
+
+random.plot <- COI.site.plot + x18S.site.plot + COI.year.plot + x18S.year.plot + plot_layout(nrow = 2)
+
+# ggsave("plots/COIv18S_RandomEffects.png", random.plot, width = 8, height = 10)
 
 
 
 #############*##############
-###### CoralNet Model ######
+###### CORALNET MODEL ######
 #############*##############
+
+# subset COI sessile data
+
+COI.SES <- COI.rra.phyla %>%
+  pivot_longer(names_to = "COI", values_to = "rra", -Phylum) %>%
+  left_join(bali_meta) %>%
+  filter(Fraction == "SES") %>%
+  mutate(marker = "COI")
+
+# subset 18S sessile data
+
+x18S.SES <- x18S.rra.phyla %>%
+  pivot_longer(names_to = "x18S", values_to = "rra", -Phylum) %>%
+  left_join(bali_meta) %>%
+  filter(Fraction == "SES")%>%
+  mutate(marker = "x18S")
+
+# combine COI and 18S sessile datasets
+
+combined.SES <- full_join(COI.SES, x18S.SES) %>%
+  mutate(ARMS = str_remove(ARMS, "COI")) %>%
+  select(Phylum, ARMS, Year, Site, marker, rra)
+
+# format and subset coralnet dataset (remove unknown, unavailable, and none)
+  
+coralnet.subset <- coralnet %>%
+  select(-unavailable, -unknown, -none) %>%
+  pivot_longer(names_to = "Phylum", values_to = "n", 3:11) %>%
+  group_by(ARMS, Phylum) %>%
+  summarise(n = sum(n)) %>%
+  group_by(ARMS) %>%
+  mutate(ntot = sum(n)) %>%
+  ungroup() %>%
+  mutate(rra = n/ntot) %>%
+  mutate(Phylum = str_to_title(Phylum)) %>%
+  select(ARMS, Phylum, rra)
+
+# phyla to remove - any phyla with zero occurrences for any sammple - only Cnidaria
+
+phyla.remove <- coralnet.subset[coralnet.subset$rra==0, "Phylum"] %>%
+  unique()
+
+# remove Cnidaria from coralnet dataset
+
+coralnet.subset <- coralnet.subset %>%
+  filter(!Phylum %in% phyla.remove) %>%
+  mutate(marker = "coralnet") 
+
+# combine COI, 18S, and coralnet datasets
+
+combined.ses.cn <- coralnet.subset %>%
+  left_join(unique(select(combined.SES, ARMS, Site, Year))) %>%
+  full_join(combined.SES) %>%
+  # only keep Phyla that are present in all datasets
+  filter(Phylum %in% coralnet.subset$Phylum,
+         Phylum %in% combined.SES$Phylum) %>%
+  # rescale rra
+  group_by(ARMS, Year, Site, marker) %>%
+  mutate(tot = sum(rra)) %>%
+  mutate(rra = rra/tot) %>%
+  select(-tot)  %>%
+  mutate(treatment = paste(Site, Year))
+
+# plot summary of combined datasets
+
+combined.plot.cn <- ggplot(combined.ses.cn) +
+  geom_boxplot((aes(x = treatment, y = log(rra), color = marker))) +
+  facet_wrap(~Phylum)
+
+
+###### RUN MODEL ######
+
+fit.cn <- brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Year:marker) + (1|Phylum:Site:marker), 
+              data = combined.ses.cn, family = "student")
+
+summary(fit.cn)
+plot(fit.cn) # trace plots look good
+brms::pp_check(fit.cn) # posterior prediction plot looks good too
+
+# dataframe for predictions
+
+prr.cn <- unique(select(combined.ses.cn, Phylum, Year, Site, marker)) %>% 
+  as.data.frame()
+
+# arrange model to create prediction plot
+
+pred.cn <- fitted(fit.cn, newdata = prr.cn, summary = FALSE)
+pred.cn <- t(pred.cn) %>% as.data.frame()
+pred.cn <- cbind(prr.cn, pred.cn)
+pred.cn <- tidyr::gather(pred.cn, key = "key", value = "value", -Phylum, -marker, -Site, -Year, -ARMS) %>%
+  mutate(treatment = paste(Site, Year))
+
+
+##### MODEL PLOTS #####
+
+# reorder factors for figure legend
+
+pred.cn$marker <- factor(pred.cn$marker, levels=c("coralnet", "COI", "x18S"))
+
+### prediction plots of 7 co-occuring phyla
+
+COI.18S.cn.plot <- ggplot(pred.cn) + 
+  geom_density_ridges( aes(x = exp(value), fill = marker,  y = treatment), 
+                       quantile_lines = TRUE, quantiles = c(0.025, 0.975), alpha = 0.7) +
+  scale_fill_manual(values = c("grey60", "blue4", "aquamarine"),
+                    labels = c("CoralNet", "COI", "18S"),
+                    name = "Marker") +
+  labs(x = "Relative abundance", y = "") +
+  scale_y_discrete(limits = rev(levels(as.factor(pred.cn$treatment))), labels = c("2013_Site1", "2012_Site2", "2012_Site1")) +
+  facet_wrap( ~ Phylum, scales = "free", ncol = 3, strip.position = "top") +
+  theme_bw() +
+  theme(panel.grid = element_blank()) +
+  theme(strip.background =element_rect(fill = "white"),
+        panel.grid = element_blank())
+
+# ggsave("plots/COI_18S_coralnet.png", COI.18S.cn.plot, width = 11, height = 8)
+
 
