@@ -1254,7 +1254,7 @@ x18S.year.plot <- random.year[random.year$marker=="x18S",] %>%
 
 random.plot <- COI.site.plot + x18S.site.plot + COI.year.plot + x18S.year.plot + plot_layout(nrow = 2)
 
-# ggsave("plots/COIv18S_RandomEffects.png", random.plot, width = 8, height = 10)
+# ggsave("plots/COIv18S_RandomEffects.png", random.plot, width = 8, height = 12)
 
 
 
@@ -1370,12 +1370,13 @@ COI.18S.cn.plot <- ggplot(pred.cn) +
                     name = "Marker") +
   labs(x = "Relative abundance", y = "") +
   scale_y_discrete(limits = rev(levels(as.factor(pred.cn$treatment))), labels = c("2013_Site1", "2012_Site2", "2012_Site1")) +
-  facet_wrap( ~ Phylum, scales = "free", ncol = 3, strip.position = "top") +
+  facet_wrap( ~ Phylum, scales = "free", ncol = 4, strip.position = "top") +
   theme_bw() +
   theme(panel.grid = element_blank()) +
   theme(strip.background =element_rect(fill = "white"),
-        panel.grid = element_blank())
+        panel.grid = element_blank(),
+        legend.position = c(0.88, 0.25))
 
-# ggsave("plots/COI_18S_coralnet.png", COI.18S.cn.plot, width = 11, height = 8)
+# ggsave("plots/COI_18S_CoralNet.png", COI.18S.cn.plot, width = 10, height = 4)
 
 
