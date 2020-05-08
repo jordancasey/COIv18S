@@ -1320,7 +1320,8 @@ combined.ses.cn <- coralnet.subset %>%
   mutate(tot = sum(rra)) %>%
   mutate(rra = rra/tot) %>%
   select(-tot)  %>%
-  mutate(treatment = paste(Site, Year))
+  mutate(treatment = paste(Site, Year)) %>%
+  ungroup()
 
 # plot summary of combined datasets
 
@@ -1366,7 +1367,7 @@ pred.cn <- pred.cn %>%
 ### prediction plots of 7 co-occuring phyla
 
 COI.18S.cn.plot <- ggplot(pred.cn) + 
-  geom_density_ridges( aes(x = exp(value), fill = marker,  y = treat.order), 
+  geom_density_ridges(aes(x = exp(value), fill = marker,  y = treat.order), 
                        quantile_lines = TRUE, quantiles = c(0.025, 0.975), alpha = 0.7) +
   scale_fill_manual(values = c("grey60", "blue4", "aquamarine"),
                     labels = c("CoralNet", "COI", "18S"),
@@ -1382,4 +1383,16 @@ COI.18S.cn.plot <- ggplot(pred.cn) +
 
 # ggsave("plots/COI_18S_CoralNet.png", COI.18S.cn.plot, width = 10, height = 4)
 
+##### PHYLA MARKER SUMMARY #####
 
+# prepare data frame
+prr.cn.summary <- unique(select(combined.ses.cn, Phylum, marker)) %>% 
+  as.data.frame()
+
+# predict only to phyla and marker, without random effects
+summary.phyla.marker <- 
+  cbind(prr.cn.summary,
+        as.data.frame(fitted(fit.cn, newdata = prr.cn.summary, 
+               re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
+  mutate(rra_fitted_median = exp(Estimate))
+  
