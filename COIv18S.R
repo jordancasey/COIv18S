@@ -1255,6 +1255,22 @@ random.plot <- COI.site.plot + x18S.site.plot + COI.year.plot + x18S.year.plot +
 # ggsave("plots/COIv18S_RandomEffects.png", random.plot, width = 8, height = 12)
 
 
+##### MODEL SUMMARY #####
+
+# prepare data frame
+
+prr.sum <- unique(select(combined.ses, Phylum, marker)) %>% 
+  as.data.frame()
+
+# predict only to phyla and marker, without random effects
+
+phyla.sum.cn <- 
+  cbind(prr.sum,
+        as.data.frame(fitted(fit, newdata = prr.sum, 
+                             re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
+  mutate(rra.median = exp(Estimate))
+
+
 
 #############*##############
 ###### CORALNET MODEL ######
@@ -1383,16 +1399,19 @@ COI.18S.cn.plot <- ggplot(pred.cn) +
 
 # ggsave("plots/COI_18S_CoralNet.png", COI.18S.cn.plot, width = 10, height = 4)
 
-##### PHYLA MARKER SUMMARY #####
+
+##### MODEL SUMMARY #####
 
 # prepare data frame
-prr.cn.summary <- unique(select(combined.ses.cn, Phylum, marker)) %>% 
+
+prr.sum.cn <- unique(select(combined.ses.cn, Phylum, marker)) %>% 
   as.data.frame()
 
 # predict only to phyla and marker, without random effects
-summary.phyla.marker <- 
-  cbind(prr.cn.summary,
-        as.data.frame(fitted(fit.cn, newdata = prr.cn.summary, 
+
+phyla.sum.cn <- 
+  cbind(prr.sum.cn,
+        as.data.frame(fitted(fit.cn, newdata = prr.sum.cn, 
                re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
-  mutate(rra_fitted_median = exp(Estimate))
+  mutate(rra.median = exp(Estimate))
   
