@@ -11,12 +11,10 @@ library(sp)
 library(cowplot)
 library(patchwork)
 library(rstan)
-library(purrr)
 library(brms)
 library(tidybayes)
 library(ggridges)
 library(ggstance)
-library(tidybayes)
 
 
 bali_COI<- read.csv("data/COI_OTU_Taxonomy.csv")
@@ -1360,16 +1358,21 @@ pred.cn <- tidyr::gather(pred.cn, key = "key", value = "value", -Phylum, -marker
 
 pred.cn$marker <- factor(pred.cn$marker, levels=c("coralnet", "COI", "x18S"))
 
+# reorder treatment factors - year and site - for y-axis
+
+pred.cn <- pred.cn %>%
+  mutate(treat.order = recode(treatment, "S1 2012" = "2012_Site1", "S2 2012" = "2012_Site2", "S1 2013" = "2013_Site1"))
+
 ### prediction plots of 7 co-occuring phyla
 
 COI.18S.cn.plot <- ggplot(pred.cn) + 
-  geom_density_ridges( aes(x = exp(value), fill = marker,  y = treatment), 
+  geom_density_ridges( aes(x = exp(value), fill = marker,  y = treat.order), 
                        quantile_lines = TRUE, quantiles = c(0.025, 0.975), alpha = 0.7) +
   scale_fill_manual(values = c("grey60", "blue4", "aquamarine"),
                     labels = c("CoralNet", "COI", "18S"),
                     name = "Marker") +
   labs(x = "Relative abundance", y = "") +
-  scale_y_discrete(limits = rev(levels(as.factor(pred.cn$treatment))), labels = c("2013_Site1", "2012_Site2", "2012_Site1")) +
+  scale_y_discrete(limits = rev(levels(as.factor(pred.cn$treat.order)))) +
   facet_wrap( ~ Phylum, scales = "free", ncol = 4, strip.position = "top") +
   theme_bw() +
   theme(panel.grid = element_blank()) +
