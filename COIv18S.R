@@ -1119,7 +1119,8 @@ length(match.phyla)
 # combine COI and 18S datasets
 
 combined.bali <- full_join(COI.long, x18S.long) %>%
-  filter(Phylum %in% match.phyla)
+  filter(Phylum %in% match.phyla) %>%
+  ungroup()
 
 # plot summary of combined datasets
 
@@ -1259,16 +1260,18 @@ random.plot <- COI.site.plot + x18S.site.plot + COI.year.plot + x18S.year.plot +
 
 # prepare data frame
 
-prr.sum <- unique(select(combined.ses, Phylum, marker)) %>% 
+prr.sum <- unique(select(combined.bali, Phylum, marker)) %>% 
   as.data.frame()
 
 # predict only to phyla and marker, without random effects
 
-phyla.sum.cn <- 
+phyla.sum <- 
   cbind(prr.sum,
         as.data.frame(fitted(fit, newdata = prr.sum, 
                              re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
-  mutate(rra.median = exp(Estimate))
+  mutate(rra.median = exp(Estimate)) %>%
+  mutate(Q2.5.median = exp(Q2.5)) %>%
+  mutate(Q97.5.median = exp(Q97.5))
 
 
 
@@ -1413,5 +1416,7 @@ phyla.sum.cn <-
   cbind(prr.sum.cn,
         as.data.frame(fitted(fit.cn, newdata = prr.sum.cn, 
                re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
-  mutate(rra.median = exp(Estimate))
+  mutate(rra.median = exp(Estimate)) %>%
+  mutate(Q2.5.median = exp(Q2.5)) %>%
+  mutate(Q97.5.median = exp(Q97.5))
   
