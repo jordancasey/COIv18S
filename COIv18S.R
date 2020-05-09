@@ -1134,9 +1134,10 @@ combined.plot <- ggplot(combined.bali)+
 
 # primer and phylum as fixed effects, random effects of year and site
 
-fit <- brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Year:marker) + (1|Phylum:Site:marker), 
-           data = combined.bali, family = "student",
-           control = list(adapt_delta = 0.9))
+fit <-  brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Treatment), 
+            data = combined.bali, family = "student",
+            control = list(adapt_delta = 0.9), 
+            prior = set_prior("uniform(-100,0)", lb = -100, ub = 0, class = "b"))
 summary(fit)
 
 plot(fit) # trace plots look good
@@ -1161,7 +1162,7 @@ pred <- tidyr::gather(pred, key = "key", value = "value", -Phylum, -Year, -Site,
 COI.18S.plot <- ggplot(pred) + 
   geom_density_ridges(aes(x = exp(value), fill = marker, y = Treatment), alpha = 0.7, 
                        quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
-  scale_fill_manual(values = c( "blue4", "aquamarine"),
+  scale_fill_manual(values = c("royalblue3", "aquamarine2"),
                     labels = c("COI", "18S"), name = "Marker") +
   theme_bw() +
   labs(x = "Relative abundance", y = "") +
@@ -1170,90 +1171,35 @@ COI.18S.plot <- ggplot(pred) +
   theme(strip.background =element_rect(fill = "white"),
         panel.grid = element_blank() )
 
-# ggsave("plots/COIvs18S_Model.png", COI.18S.plot, width = 12, height = 10)
+ggsave("plots/COIvs18S_Model.png", COI.18S.plot, width = 12, height = 10)
 
 
 ### random effect plots
 
 # concatenate phylum, site, and marker
 
-random.site <- fit %>% spread_draws(`r_Phylum:Site:marker`[level,])  %>% 
-  separate(level, into = c("Phylum", "site", "marker"), sep = "_", remove = FALSE)
+random.effects <- fit %>% spread_draws(`r_Phylum:Treatment`[level,])  %>% 
+  separate(level, into = c("Phylum", "Year", "Site"), sep = "_", remove = FALSE) %>%
+  mutate(Treatment = paste(Year, Site, sep = "_"))
+  
 
-# COI - random effect of site plot
+# random effect plot
 
-COI.site.plot <- random.site[random.site$marker=="COI",] %>%
-  ggplot(aes(y = Phylum, x = `r_Phylum:Site:marker`, fill = site), alpha = 0.5) +
+random.plot <- random.effects %>%
+  ggplot(aes(y = Phylum, x = `r_Phylum:Treatment`, fill = Treatment), alpha = 0.5) +
   geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
-  scale_fill_manual(values = c( "purple1", "gold")) +
+  scale_fill_manual(values = c( "coral1", "gold", "deepskyblue"), 
+                      labels = c("2012_Site1", "2012_Site2", "2013_Site1"),
+                    name = "") +  
   theme_bw() +
-  xlim(c(-2, 2)) +
   scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
-  labs(title = "(a) COI - Site") +
-  labs(y = "", x = "random effect") +
-  theme(panel.grid = element_blank(),
-        legend.position = "none",
-        axis.title.x = element_blank(),
-        plot.title = element_text(hjust = 0))
-
-# 18S - random effect of site plot
-
-x18S.site.plot <- random.site[random.site$marker=="x18S",] %>%
-  ggplot(aes(y = Phylum, x = `r_Phylum:Site:marker`, fill = site), alpha = 0.5) +
-  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
-  scale_fill_manual(values = c( "purple1", "gold"), name = "Site") +
-  theme_bw() +
-  xlim(c(-2, 2)) +
-  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
-  labs(title = "(b) 18S - Site") +
   labs(y = "", x = "random effect") +
   theme(panel.grid = element_blank(),
         axis.title.x = element_blank(),
         plot.title = element_text(hjust = 0), 
-        axis.text.y = element_blank(),
-        axis.title.y = element_blank(), 
-        axis.ticks.y = element_blank())
+        legend.position = "top")
 
-# concatenate phylum, year, and marker
-
-random.year <- fit %>% spread_draws(`r_Phylum:Year:marker`[level,])  %>% 
-  separate(level, into = c("Phylum", "year", "marker"), sep = "_", remove = FALSE)
-
-# COI - random effect of year plot
-
-COI.year.plot <- random.year[random.year$marker=="COI",] %>%
-  ggplot(aes(y = Phylum, x = `r_Phylum:Year:marker`, fill = year), alpha = 0.5) +
-  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
-  theme_bw() +
-  scale_fill_manual(values = c("darkorange2",  "deepskyblue")) +
-  labs(title = "(c) COI - Year") +
-  xlim(c(-2, 2)) +
-  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
-  labs(y = "", x = "random effect") +
-  theme(panel.grid = element_blank(),
-        legend.position = "none")
-
-# 18S - random effect of year plot
-
-x18S.year.plot <- random.year[random.year$marker=="x18S",] %>%
-  ggplot(aes(y = Phylum, x = `r_Phylum:Year:marker`, fill = year), alpha = 0.5) +
-  geom_density_ridges(alpha = 0.5, quantile_lines = TRUE, quantiles = c(0.025, 0.975)) +
-  theme_bw() +
-  scale_fill_manual(values = c("darkorange2",  "deepskyblue"), name = "Year") +
-  labs(title = "(d) 18S - Year") +
-  xlim(c(-2, 2)) +
-  scale_y_discrete(limits = rev(levels(as.factor(pred$Phylum)))) +
-  labs(y = "", x = "random effect")  +
-  theme(panel.grid = element_blank(),
-        axis.text.y = element_blank(),
-        axis.title.y = element_blank(), 
-        axis.ticks.y = element_blank())
-
-# concatenate all four random effects plots
-
-random.plot <- COI.site.plot + x18S.site.plot + COI.year.plot + x18S.year.plot + plot_layout(nrow = 2)
-
-# ggsave("plots/COIv18S_RandomEffects.png", random.plot, width = 8, height = 12)
+ ggsave("plots/COIv18S_RandomEffects.png", random.plot, width = 5, height = 8)
 
 
 ##### MODEL SUMMARY #####
@@ -1350,9 +1296,10 @@ combined.plot.cn <- ggplot(combined.ses.cn) +
 
 
 ###### RUN MODEL ######
-
-fit.cn <- brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Year:marker) + (1|Phylum:Site:marker), 
-              data = combined.ses.cn, family = "student")
+fit.cn <- brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:treatment), 
+              data = combined.ses.cn, family = "student",
+              control = list(adapt_delta = 0.9), 
+              prior = set_prior("uniform(-100,0)", lb = -100, ub = 0, class = "b"))
 
 summary(fit.cn)
 plot(fit.cn) # trace plots look good
@@ -1360,7 +1307,7 @@ brms::pp_check(fit.cn) # posterior prediction plot looks good too
 
 # dataframe for predictions
 
-prr.cn <- unique(select(combined.ses.cn, Phylum, Year, Site, marker)) %>% 
+prr.cn <- unique(select(combined.ses.cn, Phylum, Year, Site, marker, treatment)) %>% 
   as.data.frame()
 
 # arrange model to create prediction plot
@@ -1368,8 +1315,8 @@ prr.cn <- unique(select(combined.ses.cn, Phylum, Year, Site, marker)) %>%
 pred.cn <- fitted(fit.cn, newdata = prr.cn, summary = FALSE)
 pred.cn <- t(pred.cn) %>% as.data.frame()
 pred.cn <- cbind(prr.cn, pred.cn)
-pred.cn <- tidyr::gather(pred.cn, key = "key", value = "value", -Phylum, -marker, -Site, -Year, -ARMS) %>%
-  mutate(treatment = paste(Site, Year))
+pred.cn <- tidyr::gather(pred.cn, key = "key", value = "value", 
+                         -Phylum, -marker, -Site, -Year, -treatment) 
 
 
 ##### MODEL PLOTS #####
@@ -1381,16 +1328,19 @@ pred.cn$marker <- factor(pred.cn$marker, levels=c("coralnet", "COI", "x18S"))
 # reorder treatment factors - year and site - for y-axis
 
 pred.cn <- pred.cn %>%
-  mutate(treat.order = recode(treatment, "S1 2012" = "2012_Site1", "S2 2012" = "2012_Site2", "S1 2013" = "2013_Site1"))
+  mutate(treat.order = recode(treatment, 
+                              "S1 2012" = "2012_Site1", 
+                              "S2 2012" = "2012_Site2", 
+                              "S1 2013" = "2013_Site1"))
 
 ### prediction plots of 7 co-occuring phyla
 
 COI.18S.cn.plot <- ggplot(pred.cn) + 
   geom_density_ridges(aes(x = exp(value), fill = marker,  y = treat.order), 
                        quantile_lines = TRUE, quantiles = c(0.025, 0.975), alpha = 0.7) +
-  scale_fill_manual(values = c("grey60", "blue4", "aquamarine"),
+  scale_fill_manual(values = c("grey80", "royalblue3", "aquamarine2"),
                     labels = c("CoralNet", "COI", "18S"),
-                    name = "Marker") +
+                    name = "Tool") +
   labs(x = "Relative abundance", y = "") +
   scale_y_discrete(limits = rev(levels(as.factor(pred.cn$treat.order)))) +
   facet_wrap( ~ Phylum, scales = "free", ncol = 4, strip.position = "top") +
@@ -1400,7 +1350,7 @@ COI.18S.cn.plot <- ggplot(pred.cn) +
         panel.grid = element_blank(),
         legend.position = c(0.88, 0.25))
 
-# ggsave("plots/COI_18S_CoralNet.png", COI.18S.cn.plot, width = 10, height = 4)
+ ggsave("plots/COI_18S_CoralNet.png", COI.18S.cn.plot, width = 10, height = 4)
 
 
 ##### MODEL SUMMARY #####
