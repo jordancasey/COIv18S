@@ -1132,7 +1132,7 @@ combined.plot <- ggplot(combined.bali)+
 
 ##### RUN MODEL #####
 
-# primer and phylum as fixed effects, random effects of year and site
+# primer and phylum as fixed effects, random effect of treatment (year and site)
 
 fit <-  brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Treatment), 
             data = combined.bali, family = "student",
@@ -1216,8 +1216,8 @@ phyla.sum <-
         as.data.frame(fitted(fit, newdata = prr.sum, 
                              re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
   mutate(rra.median = exp(Estimate)) %>%
-  mutate(Q2.5.median = exp(Q2.5)) %>%
-  mutate(Q97.5.median = exp(Q97.5))
+  mutate(Q2.5.bt = exp(Q2.5)) %>%
+  mutate(Q97.5.bt = exp(Q97.5))
 
 
 
@@ -1296,6 +1296,9 @@ combined.plot.cn <- ggplot(combined.ses.cn) +
 
 
 ###### RUN MODEL ######
+
+# primer and phylum as fixed effects, random effect of treatment (year and site)
+
 fit.cn <- brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:treatment), 
               data = combined.ses.cn, family = "student",
               control = list(adapt_delta = 0.9), 
@@ -1340,7 +1343,7 @@ COI.18S.cn.plot <- ggplot(pred.cn) +
                        quantile_lines = TRUE, quantiles = c(0.025, 0.975), alpha = 0.7) +
   scale_fill_manual(values = c("grey80", "royalblue3", "aquamarine2"),
                     labels = c("CoralNet", "COI", "18S"),
-                    name = "Tool") +
+                    name = "Technique") +
   labs(x = "Relative abundance", y = "") +
   scale_y_discrete(limits = rev(levels(as.factor(pred.cn$treat.order)))) +
   facet_wrap( ~ Phylum, scales = "free", ncol = 4, strip.position = "top") +
@@ -1367,6 +1370,6 @@ phyla.sum.cn <-
         as.data.frame(fitted(fit.cn, newdata = prr.sum.cn, 
                re_formula = "log(rra) ~ 0 + Phylum:marker"))) %>%
   mutate(rra.median = exp(Estimate)) %>%
-  mutate(Q2.5.median = exp(Q2.5)) %>%
-  mutate(Q97.5.median = exp(Q97.5))
+  mutate(Q2.5.bt = exp(Q2.5)) %>%
+  mutate(Q97.5.bt = exp(Q97.5))
   
