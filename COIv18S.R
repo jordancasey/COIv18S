@@ -45,6 +45,7 @@ COI.total <- COI.nosingleton %>%
   summarize_all(funs(sum)) %>%
   mutate(sum = rowSums(.))
 
+
 ##### RAREFACTION CURVES #####
 
 ### RAREFACTION BY 500 FRACTION
@@ -552,6 +553,7 @@ x18S.total <- x18S.nosingleton %>%
   select(-c(OTUID, Phylum)) %>%
   summarize_all(funs(sum)) %>%
   mutate(sum = rowSums(.))
+
 
 ##### RAREFACTION CURVES #####
 
@@ -1233,6 +1235,17 @@ COI.SES <- COI.rra.phyla %>%
   filter(Fraction == "SES") %>%
   mutate(marker = "COI")
 
+# determine distinct number of identified phyla in sessile fraction - 33
+
+COI.SES.distinct <- COI.rra.phyla %>%
+  pivot_longer(names_to = "COI", values_to = "rra", -Phylum) %>%
+  left_join(bali_meta) %>%
+  filter(Fraction == "SES") %>%
+  pivot_wider(id_cols = Phylum, names_from = ARMS, values_from = rra, values_fill = list(rra = 0)) %>%
+  mutate(rowsum = rowSums(.[2:10])) %>%
+  filter(rowsum > 0) %>%
+  select(-rowsum)
+
 # subset 18S sessile data
 
 x18S.SES <- x18S.rra.phyla %>%
@@ -1240,6 +1253,17 @@ x18S.SES <- x18S.rra.phyla %>%
   left_join(bali_meta) %>%
   filter(Fraction == "SES")%>%
   mutate(marker = "x18S")
+
+# determine distinct number of identified phyla in sessile fraction - 45
+
+x18S.SES.distinct <- x18S.rra.phyla %>%
+  pivot_longer(names_to = "x18S", values_to = "rra", -Phylum) %>%
+  left_join(bali_meta) %>%
+  filter(Fraction == "SES") %>%
+  pivot_wider(id_cols = Phylum, names_from = ARMS, values_from = rra, values_fill = list(rra = 0)) %>%
+  mutate(rowsum = rowSums(.[2:10])) %>%
+  filter(rowsum > 0) %>%
+  select(-rowsum)
 
 # combine COI and 18S sessile datasets
 
