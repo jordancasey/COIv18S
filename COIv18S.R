@@ -17,7 +17,7 @@ library(ggridges)
 library(ggstance)
 
 
-bali_COI<- read.csv("data/COI_OTU_Taxonomy.csv")
+bali_COI <- read.csv("data/COI_OTU_Taxonomy.csv")
 bali_18S <- read.csv("data/18S_OTU_Taxonomy.csv")
 coralnet <- read_csv("data/coralnet.csv")
 bali_meta <- read.csv("data/Bali_Metadata.csv")
@@ -1373,7 +1373,7 @@ COI.18S.cn.plot <- ggplot(pred.cn) +
   facet_wrap( ~ Phylum, scales = "free", ncol = 4, strip.position = "top") +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  theme(strip.background =element_rect(fill = "white"),
+  theme(strip.background = element_rect(fill = "white"),
         panel.grid = element_blank(),
         legend.position = c(0.88, 0.25))
 
