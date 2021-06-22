@@ -467,7 +467,6 @@ head(COI.rank)
 COI.rank %>% 
   tbl_df %>% 
   pull(Phylum)
-  print(n=38)
 
 # get rid of top 10 phyla, combine all other phyla into "Other" category
 
@@ -981,7 +980,6 @@ head(x18S.rank)
 x18S.rank %>% 
   tbl_df %>% 
   pull(Phylum)
-print(n=51)
 
 # get rid of top 10 phyla, combine all other phyla into "Other" category
 
@@ -1146,10 +1144,10 @@ combined.plot <- ggplot(combined.bali)+
 
 # primer and phylum as fixed effects, random effect of treatment (year and site)
 
-fit <-  brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Treatment), 
+fit <-  brms::brm(log(rra) ~ 0 + Phylum:marker + (1|Phylum:Treatment), 
             data = combined.bali, family = "student",
             control = list(adapt_delta = 0.9), 
-            prior = set_prior("uniform(-100,0)", lb = -100, ub = 0, class = "b"))
+            prior = brms::set_prior("uniform(-100,0)", lb = -100, ub = 0, class = "b"))
 summary(fit)
 
 plot(fit) # trace plots look good
