@@ -464,6 +464,11 @@ COI.rank <- COI.phyla.known %>%
 
 head(COI.rank)
 
+COI.rank %>% 
+  tbl_df %>% 
+  pull(Phylum)
+  print(n=38)
+
 # get rid of top 10 phyla, combine all other phyla into "Other" category
 
 COI.other <- COI.rank %>%
@@ -973,6 +978,11 @@ x18S.rank <- x18S.phyla.known %>%
 
 head(x18S.rank)
 
+x18S.rank %>% 
+  tbl_df %>% 
+  pull(Phylum)
+print(n=51)
+
 # get rid of top 10 phyla, combine all other phyla into "Other" category
 
 x18S.other <- x18S.rank %>%
@@ -1235,7 +1245,7 @@ COI.SES <- COI.rra.phyla %>%
   filter(Fraction == "SES") %>%
   mutate(marker = "COI")
 
-# determine distinct number of identified phyla in sessile fraction - 33
+# determine distinct number of identified phyla in sessile fraction - 32
 
 COI.SES.distinct <- COI.rra.phyla %>%
   pivot_longer(names_to = "COI", values_to = "rra", -Phylum) %>%
@@ -1254,7 +1264,7 @@ x18S.SES <- x18S.rra.phyla %>%
   filter(Fraction == "SES")%>%
   mutate(marker = "x18S")
 
-# determine distinct number of identified phyla in sessile fraction - 45
+# determine distinct number of identified phyla in sessile fraction - 44
 
 x18S.SES.distinct <- x18S.rra.phyla %>%
   pivot_longer(names_to = "x18S", values_to = "rra", -Phylum) %>%
@@ -1264,6 +1274,28 @@ x18S.SES.distinct <- x18S.rra.phyla %>%
   mutate(rowsum = rowSums(.[2:10])) %>%
   filter(rowsum > 0) %>%
   select(-rowsum)
+
+# COI sessile data to long format
+
+COI.long.ses <- COI.SES.distinct %>%
+  filter_at(vars(-Phylum), all_vars(.>0)) %>%
+  pivot_longer(names_to = "ARMS", values_to = "rra", -Phylum) %>%
+  left_join(meta.siteyear) %>%
+  mutate(marker = "COI")
+
+# 18S sessile data to long format
+
+x18S.long.ses <- x18S.SES.distinct %>%
+  filter_at(vars(-Phylum), all_vars(.>0)) %>%
+  pivot_longer(names_to = "ARMS.18S", values_to = "rra", -Phylum) %>%
+  left_join(meta.siteyear) %>%
+  mutate(marker = "x18S")
+
+# phyla that co-occur in sessile COI and 18S datasets -14
+
+match.phyla.ses <- unique(COI.long.ses$Phylum)[unique(COI.long.ses$Phylum) %in% unique(x18S.long.ses$Phylum)]
+length(match.phyla.ses)
+
 
 # combine COI and 18S sessile datasets
 
